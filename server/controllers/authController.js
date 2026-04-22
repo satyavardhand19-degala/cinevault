@@ -10,6 +10,7 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     const admin = await Admin.findOne({ email });
+    console.log(`[login] email="${email}" found=${!!admin}`);
     if (!admin) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
@@ -20,6 +21,7 @@ exports.login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, admin.passwordHash);
+    console.log(`[login] passwordMatch=${isMatch}`);
     if (!isMatch) {
       admin.loginAttempts += 1;
       if (admin.loginAttempts >= 5) {
