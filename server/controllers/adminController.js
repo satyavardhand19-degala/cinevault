@@ -182,7 +182,8 @@ exports.uploadMedia = async (req, res) => {
     // Remove original temp file
     fs.unlinkSync(tempPath);
 
-    const fileUrl = `/uploads/${outFilename}`;
+    const base = process.env.SERVER_URL || `${req.protocol}://${req.get('host')}`;
+    const fileUrl = `${base}/uploads/${outFilename}`;
 
     res.status(200).json({
       success: true,
