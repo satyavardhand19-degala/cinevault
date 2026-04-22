@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm uninstall *)",
+      "Bash(npm run *)",
+      "Bash(node *)",
+      "Bash(nslookup cluster0.tqjnsvj.mongodb.net)",
+      "Bash(curl -s http://localhost:5000/api/movies)",
+      "Bash(curl *)",
+      "WebFetch(domain:www.themoviedb.org)",
+      "Bash(npm install *)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /F /PID 6612)",
+      "Bash(tasklist *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(Stop-Process *)"
+    ]
+  }
+}
