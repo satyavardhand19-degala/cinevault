@@ -15,9 +15,10 @@ const app = express();
 app.use(express.json());
 app.use(cors({
   origin: (origin, callback) => {
-    const allowed = process.env.CORS_ORIGIN || 'http://localhost:5173';
-    // In dev, allow any localhost port
-    if (!origin || origin === allowed || (process.env.NODE_ENV === 'development' && /^http:\/\/localhost:\d+$/.test(origin))) {
+    const allowed = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+    const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin || '');
+    const isAllowed = !origin || isLocalhost || allowed.includes(origin);
+    if (isAllowed) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
