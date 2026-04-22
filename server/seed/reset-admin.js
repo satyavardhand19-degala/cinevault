@@ -23,7 +23,7 @@ const reset = async () => {
         loginAttempts: 0,
         lockUntil: undefined
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     console.log(`Admin reset successfully: ${admin.email}`);
