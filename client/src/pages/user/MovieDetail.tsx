@@ -39,7 +39,6 @@ const MovieDetail = () => {
   }
 
   const movie = data;
-  const year = new Date(movie.releaseDate).getFullYear();
   const releaseDate = new Date(movie.releaseDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : null;
   const ytId = movie.trailerType === 'youtube' ? getYouTubeId(movie.trailerUrl) : null;

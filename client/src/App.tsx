@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/authStore';
@@ -11,7 +12,7 @@ import Dashboard from './pages/admin/Dashboard';
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   const { token, isTokenValid } = useAuthStore();
   if (!token || !isTokenValid()) {
     return <Navigate to="/admin/login" replace />;
