@@ -14,7 +14,8 @@
       "Bash(taskkill /F /PID 6612)",
       "Bash(tasklist *)",
       "PowerShell(Get-NetTCPConnection *)",
-      "PowerShell(Stop-Process *)"
+      "PowerShell(Stop-Process *)",
+      "Bash(xargs grep *)"
     ]
   }
 }

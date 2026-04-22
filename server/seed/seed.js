@@ -136,10 +136,10 @@ const seed = async () => {
     try { await Movie.collection.drop(); } catch (_) {}
     await Movie.syncIndexes();
 
-    const passwordHash = await bcrypt.hash('Admin@123', 12);
+    const passwordHash = await bcrypt.hash('12345', 12);
     await Admin.create({
       name: 'Admin User',
-      email: 'admin@cinevault.com',
+      email: 'admin',
       passwordHash,
       role: 'admin'
     });
