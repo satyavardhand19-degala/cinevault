@@ -15,7 +15,8 @@
       "Bash(tasklist *)",
       "PowerShell(Get-NetTCPConnection *)",
       "PowerShell(Stop-Process *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "WebFetch(domain:cinevault-3ynv.onrender.com)"
     ]
   }
 }

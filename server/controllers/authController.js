@@ -1,42 +1,44 @@
-const Admin = require('../models/Admin');
+const supabase = require('../config/supabase');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// @desc    Admin login
-// @route   POST /api/auth/login
-// @access  Public
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const admin = await Admin.findOne({ email });
-    if (!admin) {
+    const { data: admin, error } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    if (error || !admin) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    // Check if account is locked
-    if (admin.lockUntil && admin.lockUntil > Date.now()) {
+    if (admin.lock_until && new Date(admin.lock_until) > new Date()) {
       return res.status(403).json({ success: false, error: 'Account is locked. Try again later.' });
     }
 
-    const isMatch = await bcrypt.compare(password, admin.passwordHash);
+    const isMatch = await bcrypt.compare(password, admin.password_hash);
     if (!isMatch) {
-      admin.loginAttempts += 1;
-      if (admin.loginAttempts >= 5) {
-        admin.lockUntil = Date.now() + 10 * 60 * 1000; // 10 minutes
+      const newAttempts = admin.login_attempts + 1;
+      const updates = { login_attempts: newAttempts };
+      if (newAttempts >= 5) {
+        updates.lock_until = new Date(Date.now() + 10 * 60 * 1000).toISOString();
       }
-      await admin.save();
+      await supabase.from('admins').update(updates).eq('id', admin.id);
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    // Reset login attempts
-    admin.loginAttempts = 0;
-    admin.lockUntil = undefined;
-    admin.lastLogin = Date.now();
-    await admin.save();
+    await supabase.from('admins').update({
+      login_attempts: 0,
+      lock_until: null,
+      last_login: new Date().toISOString()
+    }).eq('id', admin.id);
 
     const token = jwt.sign(
-      { id: admin._id, role: admin.role },
+      { id: admin.id, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -45,7 +47,7 @@ exports.login = async (req, res) => {
       success: true,
       data: {
         token,
-        admin: { _id: admin._id, name: admin.name, email: admin.email, role: admin.role },
+        admin: { _id: admin.id, name: admin.name, email: admin.email, role: admin.role },
         expiresIn: 86400
       }
     });
@@ -54,9 +56,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// @desc    Admin logout
-// @route   POST /api/auth/logout
-// @access  Private
 exports.logout = async (req, res) => {
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 };

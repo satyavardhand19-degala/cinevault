@@ -1,4 +1,5 @@
-const User = require('../models/User');
+const supabase = require('../config/supabase');
+const { mapUser } = require('../utils/mappers');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
@@ -13,17 +14,28 @@ exports.register = async (req, res) => {
     if (password.length < 6)
       return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
 
-    const exists = await User.findOne({ email });
-    if (exists)
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+
+    if (existing)
       return res.status(409).json({ success: false, error: 'Email already registered' });
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, passwordHash });
+    const { data: user, error } = await supabase
+      .from('users')
+      .insert({ name, email: email.toLowerCase(), password_hash: passwordHash })
+      .select()
+      .single();
 
-    const token = signToken(user._id);
+    if (error) throw error;
+
+    const token = signToken(user.id);
     res.status(201).json({
       success: true,
-      data: { token, user: { _id: user._id, name: user.name, email: user.email } }
+      data: { token, user: { _id: user.id, name: user.name, email: user.email } }
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -36,18 +48,23 @@ exports.login = async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ success: false, error: 'Email and password are required' });
 
-    const user = await User.findOne({ email });
-    if (!user)
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    if (error || !user)
       return res.status(401).json({ success: false, error: 'Invalid email or password' });
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch)
       return res.status(401).json({ success: false, error: 'Invalid email or password' });
 
-    const token = signToken(user._id);
+    const token = signToken(user.id);
     res.status(200).json({
       success: true,
-      data: { token, user: { _id: user._id, name: user.name, email: user.email } }
+      data: { token, user: { _id: user.id, name: user.name, email: user.email } }
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

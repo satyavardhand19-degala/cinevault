@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const Admin = require('../models/Admin');
+const supabase = require('../config/supabase');
+const { mapAdmin } = require('../utils/mappers');
 
 exports.protect = async (req, res, next) => {
   if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer')) {
@@ -9,11 +10,17 @@ exports.protect = async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const admin = await Admin.findById(decoded.id).select('-passwordHash');
-    if (!admin) {
+
+    const { data: admin, error } = await supabase
+      .from('admins')
+      .select('id, name, email, role, last_login, login_attempts, lock_until, created_at, updated_at')
+      .eq('id', decoded.id)
+      .single();
+
+    if (error || !admin) {
       return res.status(401).json({ success: false, error: 'Admin no longer exists' });
     }
-    req.admin = admin;
+    req.admin = mapAdmin(admin);
     next();
   } catch (error) {
     res.status(401).json({ success: false, error: 'Not authorized, token failed' });

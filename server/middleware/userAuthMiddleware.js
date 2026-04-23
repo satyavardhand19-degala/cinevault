@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const supabase = require('../config/supabase');
+const { mapUser } = require('../utils/mappers');
 
 exports.protect = async (req, res, next) => {
   if (!req.headers.authorization?.startsWith('Bearer'))
@@ -11,10 +12,15 @@ exports.protect = async (req, res, next) => {
     if (decoded.type !== 'user')
       return res.status(401).json({ success: false, error: 'Not authorized' });
 
-    const user = await User.findById(decoded.id).select('-passwordHash');
-    if (!user) return res.status(401).json({ success: false, error: 'User not found' });
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, created_at, updated_at')
+      .eq('id', decoded.id)
+      .single();
 
-    req.user = user;
+    if (error || !user) return res.status(401).json({ success: false, error: 'User not found' });
+
+    req.user = mapUser(user);
     next();
   } catch {
     res.status(401).json({ success: false, error: 'Token invalid or expired' });

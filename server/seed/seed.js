@@ -1,10 +1,9 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
+const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
-const Admin = require('../models/Admin');
-const Movie = require('../models/Movie');
 
-// placehold.co generates reliable placeholder images at any size
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
 const poster = (title) => `https://placehold.co/500x750/1a1a2e/e94560?text=${encodeURIComponent(title)}`;
 const backdrop = (title) => `https://placehold.co/1280x720/0f0f1a/e94560?text=${encodeURIComponent(title)}`;
 
@@ -14,7 +13,7 @@ const sampleMovies = [
     slug: "pushpa-2-the-rule",
     tagline: "The fire returns, stronger than ever.",
     synopsis: "Pushpa Raj continues his rise in the red sandalwood smuggling world while facing an intense rivalry with the police and a bigger criminal empire. His journey from a labourer to a feared don reaches its peak as loyalties are tested and battles become personal.",
-    releaseDate: "2026-04-04",
+    release_date: "2026-04-04",
     runtime: 185,
     language: ["Telugu"],
     country: "India",
@@ -26,10 +25,10 @@ const sampleMovies = [
       { actor: "Fahadh Faasil", role: "SP Bhanwar Singh Shekawat" }
     ],
     rating: 8.4,
-    posterUrl: poster("Pushpa 2"),
-    backdropUrl: backdrop("Pushpa 2: The Rule"),
-    trailerUrl: "https://www.youtube.com/watch?v=YEjR-yPTNbA",
-    trailerType: "youtube",
+    poster_url: poster("Pushpa 2"),
+    backdrop_url: backdrop("Pushpa 2: The Rule"),
+    trailer_url: "https://www.youtube.com/watch?v=YEjR-yPTNbA",
+    trailer_type: "youtube",
     status: "published"
   },
   {
@@ -37,7 +36,7 @@ const sampleMovies = [
     slug: "kalki-2898-ad",
     tagline: "The future has a prophecy.",
     synopsis: "Set in a dystopian future, a mercenary named Bhairava is on a mission to save a pregnant woman who is believed to be carrying the future saviour of humanity — the tenth avatar of Vishnu, Kalki.",
-    releaseDate: "2026-04-10",
+    release_date: "2026-04-10",
     runtime: 181,
     language: ["Telugu"],
     country: "India",
@@ -50,10 +49,10 @@ const sampleMovies = [
       { actor: "Kamal Haasan", role: "Yaskin" }
     ],
     rating: 7.8,
-    posterUrl: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
-    backdropUrl: backdrop("Kalki 2898-AD"),
-    trailerUrl: "https://www.youtube.com/watch?v=wqyGBMmrLLw",
-    trailerType: "youtube",
+    poster_url: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
+    backdrop_url: backdrop("Kalki 2898-AD"),
+    trailer_url: "https://www.youtube.com/watch?v=wqyGBMmrLLw",
+    trailer_type: "youtube",
     status: "published"
   },
   {
@@ -61,7 +60,7 @@ const sampleMovies = [
     slug: "devara-part-1",
     tagline: "Fear is the only language they understand.",
     synopsis: "A fierce and fearless coastal lord rules through fear, but when his legacy is threatened by betrayal and his own son's different path, a battle for power and identity unfolds across two generations.",
-    releaseDate: "2026-04-14",
+    release_date: "2026-04-14",
     runtime: 166,
     language: ["Telugu"],
     country: "India",
@@ -73,10 +72,10 @@ const sampleMovies = [
       { actor: "Saif Ali Khan", role: "Bhaira" }
     ],
     rating: 7.5,
-    posterUrl: poster("Devara"),
-    backdropUrl: backdrop("Devara: Part 1"),
-    trailerUrl: "https://www.youtube.com/watch?v=z_5VBGfkMpI",
-    trailerType: "youtube",
+    poster_url: poster("Devara"),
+    backdrop_url: backdrop("Devara: Part 1"),
+    trailer_url: "https://www.youtube.com/watch?v=z_5VBGfkMpI",
+    trailer_type: "youtube",
     status: "published"
   },
   {
@@ -84,7 +83,7 @@ const sampleMovies = [
     slug: "hanuman",
     tagline: "A new hero rises from Anjanadri.",
     synopsis: "In a small village called Anjanadri, an ordinary young man named Hanumanthu discovers a mystical gem that grants him extraordinary powers. He must now protect his village and the people he loves from a deadly supervillain.",
-    releaseDate: "2026-04-18",
+    release_date: "2026-04-18",
     runtime: 157,
     language: ["Telugu"],
     country: "India",
@@ -96,10 +95,10 @@ const sampleMovies = [
       { actor: "Varalaxmi Sarathkumar", role: "Anjamma" }
     ],
     rating: 8.1,
-    posterUrl: poster("HanuMan"),
-    backdropUrl: backdrop("HanuMan"),
-    trailerUrl: "https://www.youtube.com/watch?v=PKbcKMFnLdo",
-    trailerType: "youtube",
+    poster_url: poster("HanuMan"),
+    backdrop_url: backdrop("HanuMan"),
+    trailer_url: "https://www.youtube.com/watch?v=PKbcKMFnLdo",
+    trailer_type: "youtube",
     status: "published"
   },
   {
@@ -107,7 +106,7 @@ const sampleMovies = [
     slug: "game-changer",
     tagline: "Power. Politics. Revolution.",
     synopsis: "An honest IAS officer takes on a corrupt political system that has deep roots across generations. His fight for justice ignites a revolution, but the cost is personal — forcing him to confront a past tied to his own family.",
-    releaseDate: "2026-04-22",
+    release_date: "2026-04-22",
     runtime: 168,
     language: ["Telugu"],
     country: "India",
@@ -119,33 +118,33 @@ const sampleMovies = [
       { actor: "SJ Suryah", role: "Bobbili Mopidevi" }
     ],
     rating: 7.2,
-    posterUrl: poster("Game Changer"),
-    backdropUrl: backdrop("Game Changer"),
-    trailerUrl: "https://www.youtube.com/watch?v=8iBXdxAW7DY",
-    trailerType: "youtube",
+    poster_url: poster("Game Changer"),
+    backdrop_url: backdrop("Game Changer"),
+    trailer_url: "https://www.youtube.com/watch?v=8iBXdxAW7DY",
+    trailer_type: "youtube",
     status: "published"
   }
 ];
 
 const seed = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected to DB for seeding...');
+    console.log('Connected to Supabase...');
 
-    await Admin.deleteMany();
-    try { await Movie.collection.drop(); } catch (_) {}
-    await Movie.syncIndexes();
+    await supabase.from('admins').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('movies').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
     const passwordHash = await bcrypt.hash('admin@123', 12);
-    await Admin.create({
+    const { error: adminError } = await supabase.from('admins').insert({
       name: 'Admin User',
       email: 'admin12@gmail.com',
-      passwordHash,
+      password_hash: passwordHash,
       role: 'admin'
     });
+    if (adminError) throw adminError;
     console.log('Admin user created');
 
-    await Movie.insertMany(sampleMovies);
+    const { error: moviesError } = await supabase.from('movies').insert(sampleMovies);
+    if (moviesError) throw moviesError;
     console.log(`${sampleMovies.length} Telugu movies seeded`);
     console.log('Seeding completed successfully');
     process.exit();
