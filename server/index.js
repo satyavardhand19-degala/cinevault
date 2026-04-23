@@ -15,16 +15,14 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       frameSrc: ["'self'", "https://www.youtube-nocookie.com", "https://www.youtube.com"],
-      imgSrc: ["'self'", "data:", "blob:", "http://localhost:5000", "https://image.tmdb.org", "https://*.tmdb.org", "https://placehold.co", "https://*.placehold.co"],
-      mediaSrc: ["'self'", "http://localhost:5000"],
+      imgSrc: ["'self'", "data:", "blob:", "https://*.supabase.co", "https://image.tmdb.org", "https://*.tmdb.org", "https://placehold.co", "https://*.placehold.co"],
+      mediaSrc: ["'self'", "https://*.supabase.co"],
       scriptSrc: ["'self'"]
     }
   }
 }));
 app.use(morgan('dev'));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.get('/', (req, res) => {

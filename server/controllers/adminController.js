@@ -1,7 +1,6 @@
 const supabase = require('../config/supabase');
 const { mapMovie } = require('../utils/mappers');
 const path = require('path');
-const fs = require('fs');
 const sharp = require('sharp');
 
 const SIZES = {
@@ -200,7 +199,6 @@ exports.getStats = async (req, res) => {
 };
 
 exports.uploadMedia = async (req, res) => {
-  const tempPath = req.file?.path;
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'Please upload a file' });
@@ -209,26 +207,28 @@ exports.uploadMedia = async (req, res) => {
     const type = req.body.type || 'default';
     const { width, height } = SIZES[type] || SIZES.default;
 
-    const outFilename = `${path.basename(tempPath, path.extname(tempPath))}.webp`;
-    const outPath = path.join(path.dirname(tempPath), outFilename);
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webp`;
 
-    await sharp(tempPath)
+    const buffer = await sharp(req.file.buffer)
       .resize(width, height, { fit: 'cover', position: 'centre' })
       .webp({ quality: 85 })
-      .toFile(outPath);
+      .toBuffer();
 
-    fs.unlinkSync(tempPath);
+    const { error: uploadError } = await supabase.storage
+      .from('media')
+      .upload(filename, buffer, { contentType: 'image/webp', upsert: false });
 
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const base = process.env.SERVER_URL || `${protocol}://${req.get('host')}`;
-    const fileUrl = `${base}/uploads/${outFilename}`;
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('media')
+      .getPublicUrl(filename);
 
     res.status(200).json({
       success: true,
-      data: { url: fileUrl, publicId: outFilename, width, height, format: 'webp' }
+      data: { url: publicUrl, publicId: filename, width, height, format: 'webp' }
     });
   } catch (error) {
-    if (tempPath && fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
     res.status(500).json({ success: false, error: error.message });
   }
 };

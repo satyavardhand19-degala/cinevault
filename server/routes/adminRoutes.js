@@ -12,15 +12,7 @@ const {
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middleware/authMiddleware');
 const multer = require('multer');
-const path = require('path');
-const storage = multer.diskStorage({
-  destination: 'uploads/',
-  filename: (req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${unique}${path.extname(file.originalname)}`);
-  }
-});
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(protect);
 router.use(admin);
