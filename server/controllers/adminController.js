@@ -219,7 +219,8 @@ exports.uploadMedia = async (req, res) => {
 
     fs.unlinkSync(tempPath);
 
-    const base = process.env.SERVER_URL || `${req.protocol}://${req.get('host')}`;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const base = process.env.SERVER_URL || `${protocol}://${req.get('host')}`;
     const fileUrl = `${base}/uploads/${outFilename}`;
 
     res.status(200).json({
